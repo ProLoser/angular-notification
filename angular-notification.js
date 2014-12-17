@@ -24,6 +24,9 @@ function NotificationProvider() {
 
   function notificationService($window, $rootScope) {
 
+    // Notifications cache.
+    var notificationTags = {};
+
     /**
      * Create a new Notification.
      *
@@ -47,9 +50,19 @@ function NotificationProvider() {
 
       function createNotification() {
         // Extend options with default provider options.
-        angular.extend(options, provider.options || {}, {
+        options = angular.extend({
           focusWindowOnClick: true
-        });
+        }, provider.options || {}, options);
+
+        if (options.tag) {
+          if (notificationTags[options.tag]) {
+            return notificationTags[options.tag];
+          }
+          notificationTags[options.tag] = self;
+          self.$on('close', function(){
+            delete notificationTags[options.tag];
+          });
+        }
 
         // Create a base notification.
         self.baseNotification = new $window.Notification(title, options);
